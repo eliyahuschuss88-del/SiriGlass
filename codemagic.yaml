@@ -1,0 +1,36 @@
+
+workflows:
+  siriglass-build:
+    name: SiriGlass iPhone Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      xcode: latest
+
+    scripts:
+      - name: Build SiriGlass Demo
+        script: |
+          xcodebuild \
+            -project Demo/SiriGlassDemo.xcodeproj \
+            -scheme SiriGlassDemo \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package IPA
+        script: |
+          APP_PATH=$(find build/DerivedData/Build/Products \
+            -name "SiriGlassDemo.app" -type d | head -1)
+
+          mkdir -p build/Payload
+          cp -R "$APP_PATH" build/Payload/
+          cd build
+          zip -r SiriGlassDemo.ipa Payload
+
+    artifacts:
+      - build/SiriGlassDemo.ipa
+      - /tmp/xcodebuild_logs/*.log
