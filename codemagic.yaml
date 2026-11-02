@@ -9,6 +9,12 @@ workflows:
       xcode: latest
 
     scripts:
+   
+    scripts:
+      - name: Install Metal Toolchain
+        script: |
+          xcodebuild -downloadComponent MetalToolchain
+
       - name: Build SiriGlass Demo
         script: |
           xcodebuild \
@@ -20,6 +26,17 @@ workflows:
             -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      - name: Package IPA
+        script: |
+          APP_PATH=$(find build/DerivedData/Build/Products \
+            -name "SiriGlassDemo.app" -type d | head -1)
+
+          mkdir -p build/Payload
+          cp -R "$APP_PATH" build/Payload/
+          cd build
+          zip -r SiriGlassDemo.ipa Payload
+
 
       - name: Package IPA
         script: |
